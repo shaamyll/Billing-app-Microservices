@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # PostgreSQL
+  postgres:
+    image: postgres:15
+    container_name: billbox-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: billbox
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    container_name: billbox-api-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    depends_on:
+      - postgres
+
+  # User Service
+  user-service:
+    build: ./user-service
+    container_name: billbox-user-service
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/billbox
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
