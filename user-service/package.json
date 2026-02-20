@@ -7,7 +7,14 @@
   "scripts": {
     "dev": "nodemon --exec ts-node --files src/server.ts",
     "start": "node dist/server.js",
-    "build": "tsc"
+    "build": "tsc",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate:dev": "npx prisma migrate dev",
+    "prisma:migrate:deploy": "npx prisma migrate deploy",
+    "prisma:seed": "npx prisma db seed",
+    "prisma:setup": "ts-node src/scripts/setup-initial-data.ts",
+    "prisma:pull": "npx prisma db pull",
+    "prisma:studio": "npx prisma studio"
   },
   "keywords": [
     "billing",
@@ -22,8 +29,6 @@
     "bcryptjs": "^2.4.3",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "joi": "^17.11.0",
-    "jsonwebtoken": "^9.0.2",
     "pg": "^8.17.2",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.3.17",

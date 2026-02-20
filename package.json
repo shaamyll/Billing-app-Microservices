@@ -1,15 +1,21 @@
 {
-  "name": "bill-box",
+  "name": "billing-app-microservices",
   "version": "1.0.0",
   "description": "A simple and user-friendly billing application designed for local traders using microservices architecture.",
-  "main": "index.js",
+  "private": true,
+  "workspaces": [
+    "api-gateway",
+    "user-service",
+    "utils"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "concurrently \"npm run dev -w api-gateway\" \"npm run dev -w user-service\"",
+    "build": "npm run build -w utils && npm run build -w api-gateway && npm run build -w user-service",
+    "install:all": "npm install --workspaces",
+    "clean": "rimraf node_modules"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "rimraf": "^5.0.5"
   }
 }
