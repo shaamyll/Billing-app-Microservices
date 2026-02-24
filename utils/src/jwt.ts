@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { env } from './config/dotenv';
-
 export interface JWTPayload {
   id: string;
   email: string;
@@ -22,7 +21,7 @@ export class JWTService {
   private static readonly ACCESS_TOKEN_SECRET = env.JWT_SECRET;
   private static readonly REFRESH_TOKEN_SECRET = env.JWT_REFRESH_SECRET;
   private static readonly ACCESS_TOKEN_EXPIRES_IN = env.JWT_EXPIRES_IN;
-  private static readonly REFRESH_TOKEN_EXPIRES_IN = env.JWT_REFRESH_EXPIRES_IN || '15d';
+  private static readonly REFRESH_TOKEN_EXPIRES_IN = env.JWT_REFRESH_EXPIRES_IN;
 
   /**
    * Generate access token
