@@ -1,6 +1,8 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { scopePerRequest } from "awilix-express";
-import { container } from "./container.js";
+import { container } from "./container";
+import { AppResponse } from "@billing/utils";
+import { userRoutes } from "./routes/userRoutes";
 
 export const createApp = () => {
   const app = express();
@@ -10,9 +12,23 @@ export const createApp = () => {
   // Attach DI container per request
   app.use(scopePerRequest(container));
 
-  const userController = container.resolve("userController");
+  // Routes
+  app.use("/api/users", userRoutes);
 
-//   app.get("/health", userController.health);
+  // Health check
+  app.get("/health", (_req: Request, res: Response) => {
+    return res.status(200).json({
+      service: "user-service",
+      status: "OK",
+    });
+  });
+
+  // Global error handler
+  app.use(
+    (err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+      AppResponse.error(res, err);
+    }
+  );
 
   return app;
 };

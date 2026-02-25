@@ -2,11 +2,12 @@ export const statusCode = {
   SUCCESS: 200,
   CREATED: 201,
   NO_CONTENT: 204,
-  ERROR: 500,
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
-  CONFLICT: 409,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
-}
+  CONFLICT: 409,
+  ERROR: 500,
+} as const;
 
+export type StatusCodeKey = keyof typeof statusCode;

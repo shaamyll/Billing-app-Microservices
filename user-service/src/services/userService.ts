@@ -1,9 +1,7 @@
-import * as bcrypt from 'bcrypt';
-import { Prisma } from '../generated/prisma/client';
-import { ConflictError, JWTService, NotFoundError, ValidationError } from '../../../utils/src/index.js';
-import { CustomError } from '../../../utils/src/index.js';
-import { IUserRepository } from '../interface/userInterface.js';
-
+import { Prisma, Role } from '../generated/prisma/client';
+import { comparePassword, ConflictError, hashPassword, JWTService, NotFoundError, ValidationError } from "@billing/utils";
+import { CustomError } from "@billing/utils";
+import { IUserRepository } from '../interface/userInterface';
 
 export interface AuthResponse {
   accessToken: string;
@@ -14,7 +12,8 @@ export interface AuthResponse {
 }
 
 export class UserService {
-    private readonly userRepository: IUserRepository;
+  private readonly userRepository: IUserRepository;
+
   constructor({ userRepository }: { userRepository: IUserRepository }) {
     this.userRepository = userRepository;
   }
@@ -25,41 +24,27 @@ export class UserService {
 
   async findById(id: string) {
     if (!id) throw new ValidationError("User id is required");
-    const user = this.userRepository.findById(id);
+    const user = await this.userRepository.findById(id);
 
     if (!user) throw new NotFoundError("User not found,Please try again later");
     return user;
   }
 
   //Register User Service
-  async register(userData: UserCreateInput): Promise<UserResponseDto> {
+  async register(userData: { name: string; email: string; password: string; role:Role }): Promise<void> {
     const { name, email, password, role } = userData;
 
     // Check if user already exists
     const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) throw new ConflictError('User with this email already exists');
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const createData: Prisma.UserCreateInput = {
-      name,
-      email,
-      password: hashedPassword,
-      isActive: true,
-    };
-
     if (role) {
-      createData.role = role;
+      userData.role = role;
     }
 
     // Create user
-    const user = await this.userRepository.create(createData);
+   await this.userRepository.create({...userData, password: await hashPassword(password)});
 
-    // Return user without password
-    const { password: _, ...userWithoutPassword } = user;
-
-    return userWithoutPassword;
   }
 
   //Login service
@@ -75,7 +60,7 @@ export class UserService {
     if (user.isActive === false) throw new CustomError('User account is deactivated', 401);
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await comparePassword(password, user.password);
 
     if (!isPasswordValid) throw new ConflictError('Invalid email or password');
 
@@ -111,41 +96,5 @@ export class UserService {
       return null;
     }
   }
-
-  //  Change user password
-  async changePassword(userId: string, oldPassword: string, newPassword: string): Promise<void> {
-    const user = await this.userRepository.findById(userId);
-
-    if (!user) throw new NotFoundError('User not found');
-
-    // Verify old password
-    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
-
-    if (!isPasswordValid) throw new CustomError('Current password is incorrect', 401);
-
-    // Hash new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    // Update password
-    await this.userRepository.update(userId, { password: hashedPassword });
-  }
-
-  //  Forgot password - generate reset token
-  async forgotPassword(email: string): Promise<string> {
-    const user = await this.userRepository.findByEmail(email);
-
-    if (!user) throw new NotFoundError('User not found');
-
-    // Generate password reset token (valid for 1 hour)
-    const resetToken = JWTService.generateAccessToken({
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    });
-
-    // TODO: Send email with reset token
-    return resetToken;
-  }
-
 
 }
