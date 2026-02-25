@@ -1,6 +1,8 @@
-export { PrismaAdapter } from "./PrismaRepositoryAdapter.js";
+export { PrismaAdapter } from "./PrismaRepositoryAdapter";
 export { statusCode } from './http.statusCodes'
 export { AppResponse } from './http.response'
 export { BadRequestError, NotFoundError, ConflictError, InternalServerError, ValidationError } from './http.errors'
 export { CustomError } from './custom.error'
 export { JWTService } from './jwt'
+export { hashPassword, comparePassword } from './hashPassword'
+export { logger } from './logger'

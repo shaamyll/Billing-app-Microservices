@@ -1,18 +1,37 @@
-import dotenv from 'dotenv';
-import express from 'express';
+import { createApp } from "./app";
+import { logger } from "@billing/utils";
+import { closePrisma, connectPrisma } from "./config/db";
+import { env } from "config/dotenv";
 
-dotenv.config();
+const PORT = env.PORT || 3002;
 
-const app = express();
-const PORT = 3001;
+const startServer = async () => {
+  try {
+    await connectPrisma();
 
-app.use(express.json());
+    const app = createApp();
 
-// Health check
-app.get('/', (req, res) => {
-  res.json({ status: 'OK', service: 'user-service' });
-});
+    const server = app.listen(PORT, () => {
+      logger.info(`🚀 User Service running on port ${PORT}`);
+    });
 
-app.listen(PORT, () => {
-  console.log(` User Service running on port ${PORT}`);
-});
+    // Graceful shutdown
+    const shutdown = async () => {
+      logger.info("🛑 Shutting down server...");
+
+      server.close(async () => {
+        await closePrisma();
+        process.exit(0);
+      });
+    };
+
+    process.on("SIGINT", shutdown);
+    process.on("SIGTERM", shutdown);
+
+  } catch (error) {
+    logger.error("❌ Failed to start server");
+    process.exit(1);
+  }
+};
+
+startServer();

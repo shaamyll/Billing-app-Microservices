@@ -2,15 +2,22 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci --only=production
+# Copy root package files
+COPY package.json package-lock.json ./
 
-# Generate Prisma Client at build time
-COPY prisma ./prisma
-RUN npx prisma generate
+# Copy workspaces
+COPY utils ./utils
+COPY user-service ./user-service
 
-COPY . .
+# Install dependencies
+RUN npm install
 
-EXPOSE 3001
+# Build workspaces
+RUN npm run build -w utils
+RUN npm run build -w user-service
 
-CMD ["npm", "start"]
+# Expose service port
+EXPOSE 3002
+
+# Run compiled user service
+CMD ["node", "user-service/dist/server.js"]

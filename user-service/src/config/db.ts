@@ -1,41 +1,61 @@
-import { prisma } from './prisma'
+import { logger } from "../../../utils/src";
+import { PrismaClient } from "../generated/prisma/client";
+import { env } from "./dotenv";
+import { PrismaPg } from '@prisma/adapter-pg';
 
-export const connectDB = async (): Promise<void> => {
-  const maxRetries = 5;
-  const retryDelay = 3000;
-  let attempt = 0;
+const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
 
-  while (attempt < maxRetries) {
-    try {
-      attempt++;
-      console.log(`🔄 Connecting to database (attempt ${attempt}/${maxRetries})...`);
+// prisma client instance
+export const prisma = new PrismaClient({
+  adapter,
+  log: ["query", "info", "warn", "error"],
+  errorFormat: "pretty",
+}).$extends({
+  query: {
+    async $allOperations({
+      operation,
+      model,
+      args,
+      query,
+    }: {
+      operation: string;
+      model?: string;
+      args: unknown;
+      query: (args: unknown) => Promise<unknown>;
+    }) {
+      const start = Date.now();
+      const result = await query(args);
+      const duration = Date.now() - start;
+      logger.info(`Prisma ${model ?? "RAW"}.${operation} took ${duration}ms`);
+      return result;
+    },
+  },
+});
 
-      await prisma.$connect();
-      
-      // Verify connection
-      await prisma.$queryRaw`SELECT 1`;
-      
-      console.log('✅ Database connection successful');
-      return;
-    } catch (error) {
-      console.error(`❌ Connection attempt ${attempt} failed:`, error instanceof Error ? error.message : error);
-
-      if (attempt >= maxRetries) {
-        throw new Error('Database connection failed after maximum retries');
-      }
-
-      console.log(`⏳ Retrying in ${retryDelay / 1000} seconds...`);
-      await new Promise(resolve => setTimeout(resolve, retryDelay));
-    }
+// connect prisma
+export const connectPrisma = async (): Promise<boolean> => {
+  try {
+    await prisma.$connect();
+    logger.info("✅ Prisma connected");
+    return true;
+  } catch (err: unknown) {
+    if (err instanceof Error) logger.error(err.message);
+    else logger.error(`Unknown error connecting to Prisma [ERROR] ${JSON.stringify(err)}`);
+    process.exit(1);
   }
 };
 
-export const closeDBConnection = async (): Promise<void> => {
+// Gracefully disconnect Prisma on app shutdown
+export const closePrisma = async (): Promise<void> => {
   try {
     await prisma.$disconnect();
-    console.log('🔌 Prisma client disconnected');
-  } catch (error) {
-    console.error('❌ Error during disconnect:', error);
-    throw error;
+    logger.info("🛑 Prisma disconnected");
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      logger.error(err.message);
+    } else {
+      logger.error(`Unknown error disconnecting Prisma [ERROR] ${JSON.stringify(err)}`);
+    }
+    process.exit(1);
   }
 };

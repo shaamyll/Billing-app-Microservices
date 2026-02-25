@@ -1,50 +1,36 @@
-import { Response as ExpressResponse } from 'express'
-import { CustomError } from './custom.error'
+import { Response as ExpressResponse } from "express";
+import { statusCode } from "./http.statusCodes";
 
-export class AppResponse {
-  public statusCode: number
-  public body: string
-
-  constructor(
-    statusCode: number,
-    data: string | Record<string, unknown> | unknown[],
-  ) {
-    this.statusCode = statusCode
-    this.body = JSON.stringify(data)
-  }
-
-  public static success<T>(
-    data: T,
-    message: string = '',
-  ): Record<string, unknown> {
-    return {
-      status: 'success',
-      message,
-      data,
-    }
-  }
-
-  public static error(
+export const AppResponse = {
+  success<T>(
     res: ExpressResponse,
-    error: unknown,
-    statusCode: number = 500,
-  ): void {
-    let responseBody: Record<string, unknown> = {}
+    status: number,
+    data?: T,
+    message?: string
+  ) {
 
-    if (error instanceof CustomError) {
-      responseBody = { error: error.message }
-      statusCode = error.statusCode || 500
-    } else if (error instanceof Error) {
-      responseBody = { error: error.message }
-    } else if (typeof error === 'string') {
-      responseBody = { error: error }
-    } else if (typeof error === 'object' && error !== null) {
-      responseBody = error as Record<string, unknown>
-    } else {
-      console.error('Unknown error:', error)
-      responseBody = { error: 'Unknown error' }
-    }
+    const response = {
+      success: true,
+      status: status,
+      message: message ?? "Request successful",
+      data: data ?? null,
+    };
 
-    res.status(statusCode).json(responseBody)
-  }
-}
+    return res.status(status).json(response);
+  },
+
+  error(res: ExpressResponse, error: any) {
+    const httpStatus =
+      error.statusCode && typeof error.statusCode === "number"
+        ? error.statusCode
+        : statusCode.ERROR;
+        
+    const response = {
+      success: false,
+      statusCode: httpStatus,
+      message: error.message ?? "Internal server error",
+    };
+
+    return res.status(httpStatus).json(response);
+  },
+};

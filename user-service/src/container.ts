@@ -1,10 +1,8 @@
 import { createContainer, asClass, asValue } from "awilix";
-import { prisma } from "./config/prisma.js";
-import { UserRepository } from "./repositories/user.repository.js";
-import { UserService } from "./services/userService.js";
-
-// import { UserService } from "./modules/user/user.service.js";
-// import { UserController } from "./modules/user/user.controller.js";
+import { UserRepository } from "./repositories/user.repository";
+import { UserService } from "./services/userService";
+import { UserController } from "./controllers/userController";
+import { prisma } from "./config/db";
 
 export const container = createContainer();
 
@@ -13,5 +11,5 @@ container.register({
 
   UserRepository: asClass(UserRepository).scoped(),
   userService: asClass(UserService).scoped(),
-//   userController: asClass(UserController).scoped(),
+  userController: asClass(UserController).scoped(),
 });
