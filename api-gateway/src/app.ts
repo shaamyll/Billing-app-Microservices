@@ -1,5 +1,4 @@
 import express from 'express';
-import { LoggerService } from '../shared/logger/LoggerService';
 
 const createApp = () => {
   const app = express();
