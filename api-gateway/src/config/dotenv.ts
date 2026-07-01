@@ -11,6 +11,12 @@ interface EnvConfig {
   JWT_REFRESH_SECRET: string;
   JWT_EXPIRES_IN: string;
   JWT_REFRESH_EXPIRES_IN: string;
+  USER_SERVICE_URL: string;
+  PRODUCT_SERVICE_URL: string;
+  CUSTOMER_SERVICE_URL: string;
+  INVOICE_SERVICE_URL: string;
+  STORE_SERVICE_URL: string;
+  NOTIFICATION_SERVICE_URL: string;
 }
 
 function validateEnv(): EnvConfig {
@@ -18,6 +24,12 @@ function validateEnv(): EnvConfig {
     'DATABASE_URL',
     'JWT_SECRET',
     'JWT_REFRESH_SECRET',
+    'USER_SERVICE_URL',
+    'PRODUCT_SERVICE_URL',
+    'CUSTOMER_SERVICE_URL',
+    'INVOICE_SERVICE_URL',
+    'STORE_SERVICE_URL',
+    'NOTIFICATION_SERVICE_URL',
   ] as const;
 
   const missingVars = requiredEnvVars.filter(
@@ -38,6 +50,12 @@ function validateEnv(): EnvConfig {
     JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET!,
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '15m',
     JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+    USER_SERVICE_URL: process.env.USER_SERVICE_URL!,
+    PRODUCT_SERVICE_URL: process.env.PRODUCT_SERVICE_URL!,
+    CUSTOMER_SERVICE_URL: process.env.CUSTOMER_SERVICE_URL!,
+    INVOICE_SERVICE_URL: process.env.INVOICE_SERVICE_URL!,
+    STORE_SERVICE_URL: process.env.STORE_SERVICE_URL!,
+    NOTIFICATION_SERVICE_URL: process.env.NOTIFICATION_SERVICE_URL!,
   };
 }
 

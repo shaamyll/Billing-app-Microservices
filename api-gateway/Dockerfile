@@ -2,11 +2,21 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Copy workspace files
 COPY package*.json ./
-RUN npm ci --only=production
+COPY tsconfig.base.json ./
+COPY api-gateway ./api-gateway
+COPY utils ./utils
 
-COPY . .
+# Install workspace dependencies
+RUN npm install
+
+# Build shared package
+RUN npm run build -w utils
+
+# Build API Gateway
+RUN npm run build -w api-gateway
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["node", "api-gateway/dist/server.js"]

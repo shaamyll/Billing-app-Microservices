@@ -1,4 +1,9 @@
-import express from 'express';
+import express, {
+  NextFunction,
+  Request,
+  Response,
+} from 'express';
+import { AppResponse } from "@billing/utils";
 
 const createApp = () => {
   const app = express();
@@ -6,21 +11,28 @@ const createApp = () => {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true }));
 
-  // Health check
-  app.get('/api/health', (req, res) => {
+  // Health Check
+  app.get('/health', (_req: Request, res: Response) => {
     return res.status(200).json({
-      status: 'OK',
       service: 'api-gateway',
-      timestamp: new Date().toISOString(),
+      status: 'OK',
     });
   });
 
-  // TODO: Attach routers here later
+  // TODO: Register Routes
+  // app.use('/api/auth', authRoutes);
 
-  // Global error handler (basic)
-  app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    res.status(500).json({ error: 'Internal Server Error' });
-  });
+  // Global Error Handler
+  app.use(
+    (
+      err: unknown,
+      _req: Request,
+      res: Response,
+      _next: NextFunction,
+    ) => {
+      AppResponse.error(res, err);
+    },
+  );
 
   return app;
 };

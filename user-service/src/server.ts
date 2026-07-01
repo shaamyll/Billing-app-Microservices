@@ -1,7 +1,7 @@
-import { createApp } from "./app";
 import { logger } from "@billing/utils";
+import { createApp } from "./app";
 import { closePrisma, connectPrisma } from "./config/db";
-import { env } from "config/dotenv";
+import { env } from "./config/dotenv";
 
 const PORT = env.PORT || 3002;
 

@@ -2,18 +2,21 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-
+# Copy workspace files
+COPY package*.json ./
 COPY utils ./utils
 COPY user-service ./user-service
 
+# Install dependencies
 RUN npm install
 
 # Generate Prisma Client
-RUN npx prisma generate --schema=user-service/prisma
+RUN npm run prisma:generate -w user-service
 
-# Build packages
+# Build shared package
 RUN npm run build -w utils
+
+# Build User Service
 RUN npm run build -w user-service
 
 EXPOSE 3002

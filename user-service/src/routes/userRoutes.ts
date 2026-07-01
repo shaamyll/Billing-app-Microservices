@@ -1,11 +1,9 @@
 import { Router } from "express";
-import { UserController } from "../controllers/userController";
-import { container } from "../container";
+import { register, login } from "../controllers/userController";
 
-const router =  Router();
+const router = Router();
 
-const userController = container.resolve<UserController>("userController");
+router.post("/register", register);
+router.post("/login", login);
 
-router.post("/register", userController.register);
-
-export {router as userRoutes};
+export { router as userRoutes };

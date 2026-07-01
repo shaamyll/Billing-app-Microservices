@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import { scopePerRequest } from "awilix-express";
 import { container } from "./container";
 import { userRoutes } from "./routes/userRoutes";
-import { AppResponse } from "../../utils/src";
+import { AppResponse } from "@billing/utils";
 
 export const createApp = () => {
   const app = express();

@@ -4,7 +4,8 @@ coverage
 
 .env
 .env.*
-
+.env.docker
+/src/grpc/generated
 !.env.example
 
 *.log

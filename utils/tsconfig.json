@@ -2,10 +2,8 @@
   "extends": "../tsconfig.base.json",
 
   "compilerOptions": {
-    "baseUrl": "./src",
     "rootDir": "./src",
     "outDir": "./dist",
-    "ignoreDeprecations": "6.0"
   },
 
   "include": ["src"],
