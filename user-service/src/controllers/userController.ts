@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { UserService } from "../services/userService";
-import { AppResponse, statusCode } from "@billing/utils";
+import { AppResponse, statusCode } from "../../../utils/src";
 
 export class UserController {
 private readonly userService: UserService;

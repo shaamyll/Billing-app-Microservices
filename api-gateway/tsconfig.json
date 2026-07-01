@@ -1,15 +1,20 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "outDir": "./dist",
-    "rootDir": "./src",
+    "baseUrl": "src",
+    "rootDir": "../",
+    "outDir": "dist",
+
+    "module": "commonjs",
+    "target": "ES2020",
+
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }

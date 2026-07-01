@@ -1,21 +1,37 @@
 {
   "name": "billing-app-microservices",
-  "version": "1.0.0",
-  "description": "A simple and user-friendly billing application designed for local traders using microservices architecture.",
   "private": true,
+
   "workspaces": [
     "api-gateway",
     "user-service",
     "utils"
   ],
+
   "scripts": {
     "dev": "concurrently \"npm run dev -w api-gateway\" \"npm run dev -w user-service\"",
+
     "build": "npm run build -w utils && npm run build -w api-gateway && npm run build -w user-service",
-    "install:all": "npm install --workspaces",
+
+    "lint": "eslint .",
+
+    "format": "prettier --write .",
+
     "clean": "rimraf node_modules"
   },
+
   "devDependencies": {
+    "@eslint/js": "^9.x",
+    "@types/node": "^22.x",
     "concurrently": "^9.2.1",
-    "rimraf": "^5.0.5"
+    "eslint": "^9.x",
+    "globals": "^16.x",
+    "nodemon": "^3.x",
+    "prettier": "^3.x",
+    "rimraf": "^5.x",
+    "ts-node": "^10.x",
+    "ts-node-dev": "^2.x",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.x"
   }
 }

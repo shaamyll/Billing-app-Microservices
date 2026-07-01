@@ -1,8 +1,8 @@
 import express, { Request, Response, NextFunction } from "express";
 import { scopePerRequest } from "awilix-express";
 import { container } from "./container";
-import { AppResponse } from "@billing/utils";
 import { userRoutes } from "./routes/userRoutes";
+import { AppResponse } from "../../utils/src";
 
 export const createApp = () => {
   const app = express();
