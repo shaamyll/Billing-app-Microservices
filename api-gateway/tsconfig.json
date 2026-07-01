@@ -1,20 +1,12 @@
 {
+  "extends": "../tsconfig.base.json",
+
   "compilerOptions": {
-    "baseUrl": "src",
-    "rootDir": "../",
-    "outDir": "dist",
-
-    "module": "commonjs",
-    "target": "ES2020",
-
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "baseUrl": "./src",
+    "rootDir": "./src",
+    "outDir": "./dist"
   },
+
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }

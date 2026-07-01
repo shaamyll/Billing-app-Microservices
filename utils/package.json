@@ -2,25 +2,26 @@
   "name": "@billing/utils",
   "version": "1.0.0",
   "description": "Shared utilities for billing microservices",
+  "private": true,
+
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "private": false,
+
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w",
     "clean": "rimraf dist"
   },
+
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^17.2.2",
     "jsonwebtoken": "^9.0.2",
-    "winston": "^3.13.0"
+    "winston": "^3.17.0"
   },
+
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
-    "@types/jsonwebtoken": "^9.0.6",
-    "@types/node": "^20.12.7",
-    "rimraf": "^5.0.5",
-    "typescript": "^5.4.5"
+    "@types/jsonwebtoken": "^9.0.10"
   }
 }
