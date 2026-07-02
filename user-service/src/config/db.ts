@@ -1,9 +1,9 @@
-import { logger } from "../../../utils/src";
+import { logger } from "@billing/utils";
 import { PrismaClient } from "../generated/prisma/client";
 import { env } from "./dotenv";
 import { PrismaPg } from '@prisma/adapter-pg';
 
-const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
+const adapter = new PrismaPg({ connectionString: env.USER_DATABASE_URL, ssl: false });
 
 // prisma client instance
 export const prisma = new PrismaClient({

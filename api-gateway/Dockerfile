@@ -9,7 +9,7 @@ COPY api-gateway ./api-gateway
 COPY utils ./utils
 
 # Install workspace dependencies
-RUN npm install
+RUN npm ci
 
 # Build shared package
 RUN npm run build -w utils

@@ -13,7 +13,7 @@ export const createApp = () => {
   app.use(scopePerRequest(container));
 
   // Routes
-  app.use("/api/users", userRoutes);
+  app.use("/api/auth", userRoutes);
 
   // Health check
   app.get("/health", (_req: Request, res: Response) => {

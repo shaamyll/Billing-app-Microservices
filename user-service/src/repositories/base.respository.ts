@@ -1,4 +1,4 @@
-import { PrismaAdapter } from "../../../utils/src/index.js";
+import { PrismaAdapter } from "@billing/utils";
 
 export class BaseRepository<TModel, TCreate, TUpdate, TWhere> {
   constructor(protected adapter: PrismaAdapter<TModel, TCreate, TUpdate, TWhere>) {}

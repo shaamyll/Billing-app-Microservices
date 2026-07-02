@@ -8,6 +8,6 @@ export const container = createContainer();
 container.register({
   prisma: asValue(prisma),
 
-  UserRepository: asClass(UserRepository).scoped(),
+  userRepository: asClass(UserRepository).scoped(),
   userService: asClass(UserService).scoped(),
 });

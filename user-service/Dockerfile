@@ -6,9 +6,10 @@ WORKDIR /app
 COPY package*.json ./
 COPY utils ./utils
 COPY user-service ./user-service
+COPY tsconfig.base.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
 # Generate Prisma Client
 RUN npm run prisma:generate -w user-service

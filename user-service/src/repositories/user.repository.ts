@@ -1,6 +1,6 @@
+import { PrismaAdapter } from "@billing/utils";
 import { PrismaClient, Prisma } from "../generated/prisma/client";
 import { BaseRepository } from "./base.respository";
-import { PrismaAdapter } from "../../../utils/src/index.js";
 
 type TModel = Prisma.UserGetPayload<Prisma.UserFindUniqueArgs>;
 type TCreate = Prisma.UserCreateArgs["data"];
