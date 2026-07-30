@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { env } from './config/dotenv';
+
 export interface JWTPayload {
   id: string;
   email: string;
@@ -17,61 +17,74 @@ export interface TokenPair {
   refreshTokenExpiresIn: number;
 }
 
+export interface JWTConfig {
+  accessSecret: string;
+  refreshSecret: string;
+  accessExpiresIn: string;
+  refreshExpiresIn: string;
+}
+
+/**
+ * JWTService is now instance-based and environment-agnostic.
+ * Callers (microservices) own their configuration and pass it in
+ * via the constructor. No process.env / dotenv is read here.
+ */
 export class JWTService {
-  private static readonly ACCESS_TOKEN_SECRET = env.JWT_SECRET;
-  private static readonly REFRESH_TOKEN_SECRET = env.JWT_REFRESH_SECRET;
-  private static readonly ACCESS_TOKEN_EXPIRES_IN = env.JWT_EXPIRES_IN;
-  private static readonly REFRESH_TOKEN_EXPIRES_IN = env.JWT_REFRESH_EXPIRES_IN;
+  private readonly config: JWTConfig;
+
+  constructor(config: JWTConfig) {
+    this.config = config;
+  }
 
   /**
    * Generate access token
    */
-  static generateAccessToken(payload: Omit<JWTPayload, 'tokenType'>): string {
+  generateAccessToken(payload: Omit<JWTPayload, 'tokenType'>): string {
     const tokenPayload: JWTPayload = {
       ...payload,
       tokenType: 'access',
     };
 
-    return jwt.sign(tokenPayload, this.ACCESS_TOKEN_SECRET, {
-      expiresIn: this.getExpirationTime(this.ACCESS_TOKEN_EXPIRES_IN),
+    return jwt.sign(tokenPayload, this.config.accessSecret, {
+      expiresIn: this.getExpirationTime(this.config.accessExpiresIn),
     });
   }
 
   /**
    * Generate refresh token
    */
-  static generateRefreshToken(payload: Omit<JWTPayload, 'tokenType'>): string {
+  generateRefreshToken(payload: Omit<JWTPayload, 'tokenType'>): string {
     const tokenPayload: JWTPayload = {
       ...payload,
       tokenType: 'refresh',
     };
 
-    return jwt.sign(tokenPayload, this.REFRESH_TOKEN_SECRET, {
-      expiresIn: this.getExpirationTime(this.REFRESH_TOKEN_EXPIRES_IN),
+    return jwt.sign(tokenPayload, this.config.refreshSecret, {
+      expiresIn: this.getExpirationTime(this.config.refreshExpiresIn),
     });
   }
 
   /**
    * Generate token pair (access + refresh)
    */
-  static generateTokenPair(payload: Omit<JWTPayload, 'tokenType'>): TokenPair {
+  generateTokenPair(payload: Omit<JWTPayload, 'tokenType'>): TokenPair {
     const accessToken = this.generateAccessToken(payload);
     const refreshToken = this.generateRefreshToken(payload);
 
     return {
       accessToken,
       refreshToken,
-      accessTokenExpiresIn: this.getExpirationTime(this.ACCESS_TOKEN_EXPIRES_IN),
-      refreshTokenExpiresIn: this.getExpirationTime(this.REFRESH_TOKEN_EXPIRES_IN),
+      accessTokenExpiresIn: this.getExpirationTime(this.config.accessExpiresIn),
+      refreshTokenExpiresIn: this.getExpirationTime(this.config.refreshExpiresIn),
     };
   }
 
   /**
    * Verify access token
    */
-  static verifyAccessToken(token: string): JWTPayload {
+  verifyAccessToken(token: string): JWTPayload {
     try {
-      const decoded = jwt.verify(token, this.ACCESS_TOKEN_SECRET) as JWTPayload;
+      const decoded = jwt.verify(token, this.config.accessSecret) as JWTPayload;
 
       if (decoded.tokenType !== 'access') {
         throw new Error('Invalid token type');
@@ -92,9 +105,9 @@ export class JWTService {
   /**
    * Verify refresh token
    */
-  static verifyRefreshToken(token: string): JWTPayload {
+  verifyRefreshToken(token: string): JWTPayload {
     try {
-      const decoded = jwt.verify(token, this.REFRESH_TOKEN_SECRET) as JWTPayload;
+      const decoded = jwt.verify(token, this.config.refreshSecret) as JWTPayload;
 
       if (decoded.tokenType !== 'refresh') {
         throw new Error('Invalid token type');
@@ -115,7 +128,7 @@ export class JWTService {
   /**
    * Decode token without verification (for debugging)
    */
-  static decodeToken(token: string): JWTPayload | null {
+  decodeToken(token: string): JWTPayload | null {
     try {
       return jwt.decode(token) as JWTPayload;
     } catch {
@@ -133,7 +146,7 @@ export class JWTService {
   /**
    * Get token expiration time in seconds
    */
-  private static getExpirationTime(expiresIn: string): number {
+  private getExpirationTime(expiresIn: string): number {
     const timeMap: { [key: string]: number } = {
       s: 1,
       m: 60,
@@ -156,7 +169,7 @@ export class JWTService {
   /**
    * Check if token is expired
    */
-  static isTokenExpired(token: string): boolean {
+  isTokenExpired(token: string): boolean {
     try {
       const decoded = this.decodeToken(token);
       if (!decoded || !decoded.exp) {
@@ -172,7 +185,7 @@ export class JWTService {
   /**
    * Get token remaining time in seconds
    */
-  static getTokenRemainingTime(token: string): number {
+  getTokenRemainingTime(token: string): number {
     try {
       const decoded = this.decodeToken(token);
       if (!decoded || !decoded.exp) {
@@ -189,7 +202,7 @@ export class JWTService {
   /**
    * Refresh access token using refresh token
    */
-  static refreshToken(refreshToken: string): TokenPair {
+  refreshToken(refreshToken: string): TokenPair {
     // Verify refresh token
     const payload = this.verifyRefreshToken(refreshToken);
 

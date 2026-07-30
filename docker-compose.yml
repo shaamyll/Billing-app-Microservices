@@ -42,7 +42,7 @@ services:
         condition: service_healthy
 
     env_file:
-      - ./user-service/.env
+      - ./user-service/.env.docker
 
     ports:
       - "3002:3002"
@@ -63,7 +63,7 @@ services:
       - user-service
 
     env_file:
-      - ./api-gateway/.env
+      - ./api-gateway/.env.docker
 
     ports:
       - "3000:3000"

@@ -12,7 +12,7 @@ export class UserRepository extends BaseRepository<TModel, TCreate, TUpdate, TWh
     super(new PrismaAdapter(prisma.user));
   }
 
-  async findUserByEmail(email: string) {
+  async findByEmail(email: string) {
     return await this.findOne({ email });
   }
 

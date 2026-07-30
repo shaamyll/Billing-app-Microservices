@@ -1,8 +1,12 @@
 import createApp from './app';
-import { logger } from '@billing/utils';
+import { createLogger } from '@billing/utils';
 import { env } from './config/dotenv';
 
 const PORT = env.PORT || 3000;
+
+const logger = createLogger({
+  level: env.NODE_ENV === 'production' ? 'info' : 'debug',
+});
 
 const startServer = async () => {
   try {

@@ -1,8 +1,8 @@
 import { Prisma, Role } from '../generated/prisma/client';
-import { comparePassword, ConflictError, hashPassword, JWTService, NotFoundError, ValidationError } from "@billing/utils";
+import { comparePassword, ConflictError, hashPassword, NotFoundError, ValidationError } from "@billing/utils";
 import { CustomError } from "@billing/utils";
 import { IUserRepository } from '../interface/userInterface';
-
+import { jwtService } from '../config/jwt';
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
@@ -10,7 +10,6 @@ export interface AuthResponse {
   refreshTokenExpiresIn: number;
   user: Omit<Prisma.UserGetPayload<{}>, 'password'>;
 }
-
 export class UserService {
   private readonly userRepository: IUserRepository;
 
@@ -65,7 +64,7 @@ export class UserService {
     if (!isPasswordValid) throw new ConflictError('Invalid email or password');
 
     // Generate tokens
-    const tokenPair = JWTService.generateTokenPair({
+    const tokenPair = jwtService.generateTokenPair({
       id: user.id,
       email: user.email,
       role: user.role,
@@ -83,7 +82,7 @@ export class UserService {
   //  Get current user from token
   async getCurrentUser(accessToken: string): Promise<Omit<Prisma.UserGetPayload<{}>, 'password'> | null> {
     try {
-      const payload = JWTService.verifyAccessToken(accessToken);
+      const payload = jwtService.verifyAccessToken(accessToken);
       const user = await this.userRepository.findById(payload.id);
 
       if (!user) {

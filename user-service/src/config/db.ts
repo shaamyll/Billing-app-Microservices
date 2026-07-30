@@ -1,9 +1,13 @@
-import { logger } from "@billing/utils";
+import { createLogger } from "@billing/utils";
 import { PrismaClient } from "../generated/prisma/client";
 import { env } from "./dotenv";
 import { PrismaPg } from '@prisma/adapter-pg';
 
 const adapter = new PrismaPg({ connectionString: env.USER_DATABASE_URL, ssl: false });
+
+const logger = createLogger({
+  isProduction: env.NODE_ENV === 'production',
+});
 
 // prisma client instance
 export const prisma = new PrismaClient({
