@@ -4,9 +4,13 @@ import express, {
   Response,
 } from 'express';
 import { AppResponse } from "@billing/utils";
+import authRoutes from './routes/auth.routes';
 
 const createApp = () => {
   const app = express();
+
+  // Register API routes
+  app.use("/api", authRoutes);
 
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true }));
@@ -18,9 +22,6 @@ const createApp = () => {
       status: 'OK',
     });
   });
-
-  // TODO: Register Routes
-  // app.use('/api/auth', authRoutes);
 
   // Global Error Handler
   app.use(

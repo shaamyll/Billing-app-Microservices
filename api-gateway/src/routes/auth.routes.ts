@@ -3,6 +3,6 @@ import { userProxy } from "../proxy/service.proxy";
 
 const router = Router();
 
-router.use("/api/auth", userProxy);
+router.use("/auth", userProxy);
 
 export default router;
