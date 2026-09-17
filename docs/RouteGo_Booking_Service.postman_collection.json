@@ -1,0 +1,253 @@
+{
+  "info": {
+    "_postman_id": "f7a8b9c0-d1e2-43f5-a6b7-c8d9e0f1a2b3",
+    "name": "RouteGo - Booking Service",
+    "description": "Comprehensive test suite for RouteGo Booking Service (availability checks, hold reservations, and concurrency conflict checks)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Check Seat Availability - Available",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Seat segment is available\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.data.available).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/bookings/trips/{{tripId}}/seats/{{seatId}}/availability?from=1&to=3",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "bookings", "trips", "{{tripId}}", "seats", "{{seatId}}", "availability"],
+          "query": [
+            { "key": "from", "value": "1" },
+            { "key": "to", "value": "3" }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Seat Hold (PENDING)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test(\"Hold created with PENDING status and expiration time\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.data.status).to.eql(\"PENDING\");",
+              "    pm.expect(jsonData.data.fromStopSeq).to.eql(1);",
+              "    pm.expect(jsonData.data.toStopSeq).to.eql(3);",
+              "    pm.expect(jsonData.data.holdExpiresAt).to.not.be.null;",
+              "    if (jsonData.data.id) {",
+              "        pm.collectionVariables.set(\"bookingId\", jsonData.data.id);",
+              "    }",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tripId\": \"{{tripId}}\",\n  \"seatId\": \"{{seatId}}\",\n  \"fromStopSeq\": 1,\n  \"toStopSeq\": 3\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/bookings/hold",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "bookings", "hold"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Check Seat Availability - Overlapping Hold (Unavailable)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test(\"Seat segment is NOT available due to overlapping hold\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.data.available).to.be.false;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/bookings/trips/{{tripId}}/seats/{{seatId}}/availability?from=2&to=4",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "bookings", "trips", "{{tripId}}", "seats", "{{seatId}}", "availability"],
+          "query": [
+            { "key": "from", "value": "2" },
+            { "key": "to", "value": "4" }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Attempt Overlapping Hold (Expects 409 Conflict)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 409 Conflict\", function () {",
+              "    pm.response.to.have.status(409);",
+              "});",
+              "pm.test(\"Returns conflict error response\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.false;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tripId\": \"{{tripId}}\",\n  \"seatId\": \"{{seatId}}\",\n  \"fromStopSeq\": 2,\n  \"toStopSeq\": 4\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/bookings/hold",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "bookings", "hold"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Adjacent Non-Overlapping Hold (Segment 3 -> 5 - Succeeds)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test(\"Adjacent hold created successfully on same seat\", function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.success).to.be.true;",
+              "    pm.expect(jsonData.data.status).to.eql(\"PENDING\");",
+              "    pm.expect(jsonData.data.fromStopSeq).to.eql(3);",
+              "    pm.expect(jsonData.data.toStopSeq).to.eql(5);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tripId\": \"{{tripId}}\",\n  \"seatId\": \"{{seatId}}\",\n  \"fromStopSeq\": 3,\n  \"toStopSeq\": 5\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/bookings/hold",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "bookings", "hold"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Hold Without Token (Expects 401 Unauthorized)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 401 Unauthorized\", function () {",
+              "    pm.response.to.have.status(401);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tripId\": \"{{tripId}}\",\n  \"seatId\": \"{{seatId}}\",\n  \"fromStopSeq\": 1,\n  \"toStopSeq\": 2\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/bookings/hold",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "bookings", "hold"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    { "key": "tripId", "value": "a3818139-00f7-4a43-945c-aa753fd3a271" },
+    { "key": "seatId", "value": "07a2214f-4cb9-49d5-8153-9a4e5ffc6ea3" },
+    { "key": "accessToken", "value": "" },
+    { "key": "bookingId", "value": "" }
+  ]
+}

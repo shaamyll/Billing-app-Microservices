@@ -94,6 +94,28 @@ services:
     networks:
       - billing-network
 
+  booking-service:
+    container_name: booking-service
+
+    build:
+      context: .
+      dockerfile: booking-service/Dockerfile
+
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    env_file:
+      - ./booking-service/.env.docker
+
+    ports:
+      - "3009:3009"
+
+    networks:
+      - billing-network
+
   api-gateway:
     container_name: api-gateway
 
@@ -107,6 +129,7 @@ services:
       - user-service
       - route-service
       - trip-service
+      - booking-service
 
     env_file:
       - ./api-gateway/.env.docker

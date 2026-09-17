@@ -8,11 +8,12 @@
     "user-service",
     "utils",
     "route-service",
-    "trip-service"
+    "trip-service",
+    "booking-service"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev -w api-gateway\" \"npm run dev -w user-service\" \"npm run dev -w route-service\" \"npm run dev -w trip-service\"",
-    "build": "npm run build -w utils && npm run build -w api-gateway && npm run build -w user-service && npm run build -w route-service && npm run build -w trip-service",
+    "dev": "concurrently \"npm run dev -w api-gateway\" \"npm run dev -w user-service\" \"npm run dev -w route-service\" \"npm run dev -w trip-service\" \"npm run dev -w booking-service\"",
+    "build": "npm run build -w utils && npm run build -w api-gateway && npm run build -w user-service && npm run build -w route-service && npm run build -w trip-service && npm run build -w booking-service",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

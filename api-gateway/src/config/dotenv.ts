@@ -19,6 +19,7 @@ interface EnvConfig {
   NOTIFICATION_SERVICE_URL: string;
   ROUTE_SERVICE_URL: string;
   TRIP_SERVICE_URL: string;
+  BOOKING_SERVICE_URL: string;
 }
 
 function validateEnv(): EnvConfig {
@@ -34,6 +35,7 @@ function validateEnv(): EnvConfig {
     'NOTIFICATION_SERVICE_URL',
     'ROUTE_SERVICE_URL',
     'TRIP_SERVICE_URL',
+    'BOOKING_SERVICE_URL',
   ] as const;
 
   const missingVars = requiredEnvVars.filter(
@@ -62,6 +64,7 @@ function validateEnv(): EnvConfig {
     NOTIFICATION_SERVICE_URL: process.env.NOTIFICATION_SERVICE_URL!,
     ROUTE_SERVICE_URL: process.env.ROUTE_SERVICE_URL!,
     TRIP_SERVICE_URL: process.env.TRIP_SERVICE_URL!,
+    BOOKING_SERVICE_URL: process.env.BOOKING_SERVICE_URL || 'http://localhost:3009',
   };
 }
 
