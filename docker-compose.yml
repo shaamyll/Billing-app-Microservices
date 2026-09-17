@@ -72,6 +72,28 @@ services:
     networks:
       - billing-network
 
+  trip-service:
+    container_name: trip-service
+
+    build:
+      context: .
+      dockerfile: trip-service/Dockerfile
+
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    env_file:
+      - ./trip-service/.env.docker
+
+    ports:
+      - "3008:3008"
+
+    networks:
+      - billing-network
+
   api-gateway:
     container_name: api-gateway
 
@@ -84,6 +106,7 @@ services:
     depends_on:
       - user-service
       - route-service
+      - trip-service
 
     env_file:
       - ./api-gateway/.env.docker

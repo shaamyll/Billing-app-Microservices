@@ -18,6 +18,7 @@ interface EnvConfig {
   STORE_SERVICE_URL: string;
   NOTIFICATION_SERVICE_URL: string;
   ROUTE_SERVICE_URL: string;
+  TRIP_SERVICE_URL: string;
 }
 
 function validateEnv(): EnvConfig {
@@ -32,6 +33,7 @@ function validateEnv(): EnvConfig {
     'STORE_SERVICE_URL',
     'NOTIFICATION_SERVICE_URL',
     'ROUTE_SERVICE_URL',
+    'TRIP_SERVICE_URL',
   ] as const;
 
   const missingVars = requiredEnvVars.filter(
@@ -59,6 +61,7 @@ function validateEnv(): EnvConfig {
     STORE_SERVICE_URL: process.env.STORE_SERVICE_URL!,
     NOTIFICATION_SERVICE_URL: process.env.NOTIFICATION_SERVICE_URL!,
     ROUTE_SERVICE_URL: process.env.ROUTE_SERVICE_URL!,
+    TRIP_SERVICE_URL: process.env.TRIP_SERVICE_URL!,
   };
 }
 

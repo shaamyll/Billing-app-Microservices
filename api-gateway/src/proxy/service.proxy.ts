@@ -23,4 +23,7 @@ export const notificationProxy = createServiceProxy(
   env.NOTIFICATION_SERVICE_URL
 );
 
-export const routeProxy = createServiceProxy(env.ROUTE_SERVICE_URL);
+export const routeProxy = createServiceProxy(env.ROUTE_SERVICE_URL);
+
+export const tripProxy = createServiceProxy(env.TRIP_SERVICE_URL);
+

@@ -1,0 +1,43 @@
+{
+  "name": "@billing-app-microservice/trip-service",
+  "version": "1.0.0",
+  "description": "Trip management service for RouteGo",
+  "private": true,
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "tsx --test tests/**/*.test.ts",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:seed": "prisma db seed",
+    "prisma:pull": "prisma db pull",
+    "prisma:studio": "prisma studio"
+  },
+  "keywords": [
+    "bus-reservation",
+    "trip-management",
+    "microservice"
+  ],
+  "license": "ISC",
+  "dependencies": {
+    "@billing/utils": "*",
+    "@prisma/adapter-pg": "^7.4.1",
+    "@prisma/client": "^7.4.1",
+    "awilix": "^13.0.0",
+    "awilix-express": "^11.0.1",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "pg": "^8.18.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/pg": "^8.11.11",
+    "prisma": "^7.4.1",
+    "tsx": "4.23.1"
+  }
+}

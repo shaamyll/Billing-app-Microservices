@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum BusType {
+  AC_SEATER
+  AC_SLEEPER
+  NON_AC_SEATER
+  NON_AC_SLEEPER
+}
+
+enum SeatType {
+  WINDOW
+  AISLE
+  UPPER_BERTH
+  LOWER_BERTH
+}
+
+enum TripStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Bus {
+  id                 String   @id @default(uuid()) @db.Uuid
+  registrationNumber String   @unique
+  operatorName       String
+  busType            BusType
+  totalSeats         Int
+  seats              Seat[]
+  trips              Trip[]
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Seat {
+  id         String   @id @default(uuid()) @db.Uuid
+  busId      String   @db.Uuid
+  bus        Bus      @relation(fields: [busId], references: [id], onDelete: Cascade)
+  seatNumber String
+  seatType   SeatType
+
+  @@unique([busId, seatNumber])
+  @@index([busId])
+}
+
+model Trip {
+  id             String     @id @default(uuid()) @db.Uuid
+  routeId        String     @db.Uuid
+  busId          String     @db.Uuid
+  bus            Bus        @relation(fields: [busId], references: [id])
+  departureDate  DateTime
+  departureTime  String
+  status         TripStatus @default(SCHEDULED)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([routeId, departureDate])
+  @@index([busId])
+}
