@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
   user-db:
@@ -15,7 +13,7 @@ services:
     volumes:
       - user-db-data:/var/lib/postgresql/data
     networks:
-      - billing-network
+      - busbooking-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -35,7 +33,7 @@ services:
     volumes:
       - route-db-data:/var/lib/postgresql/data
     networks:
-      - billing-network
+      - busbooking-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -55,7 +53,7 @@ services:
     volumes:
       - trip-db-data:/var/lib/postgresql/data
     networks:
-      - billing-network
+      - busbooking-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s

@@ -8,6 +8,6 @@ export default defineConfig({
     seed: 'tsx prisma/seed.ts',
   },
   datasource: {
-    url: process.env["DATABASE_URL"] || process.env["TRIP_DATABASE_URL"],
+    url: process.env["TRIP_DATABASE_URL"],
   },
 });
