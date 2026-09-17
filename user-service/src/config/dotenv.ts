@@ -13,7 +13,7 @@ interface EnvConfig {
 export const env: EnvConfig = {
   PORT: Number(process.env.PORT) || 3002,
   NODE_ENV: process.env.NODE_ENV || "development",
-  USER_DATABASE_URL: process.env.USER_DATABASE_URL || "",
+  USER_DATABASE_URL: process.env.USER_DATABASE_URL || process.env.DATABASE_URL || "",
   JWT_SECRET: process.env.JWT_SECRET || "billing-app-microservice-access",
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || "billing-app-microservice-refresh",
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "15m",

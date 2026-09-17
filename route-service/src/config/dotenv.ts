@@ -9,5 +9,5 @@ interface EnvConfig {
 export const env: EnvConfig = {
   PORT: Number(process.env.PORT) || 3007,
   NODE_ENV: process.env.NODE_ENV || "development",
-  ROUTE_DATABASE_URL: process.env.ROUTE_DATABASE_URL || "",
+  ROUTE_DATABASE_URL: process.env.ROUTE_DATABASE_URL || process.env.DATABASE_URL || "",
 };

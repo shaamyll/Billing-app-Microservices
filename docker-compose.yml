@@ -2,26 +2,80 @@ version: "3.9"
 
 services:
 
-  postgres:
-    image: postgres:17-alpine
-    container_name: billing-postgres
-
+  user-db:
+    image: postgres:16
+    container_name: busbooking-user-db
     restart: unless-stopped
-
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: billing_user_db
-
+      POSTGRES_DB: busbooking_user_db
     ports:
-      - "5432:5432"
-
+      - "5433:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-
+      - user-db-data:/var/lib/postgresql/data
     networks:
       - billing-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  route-db:
+    image: postgres:16
+    container_name: busbooking-route-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: busbooking_route_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - route-db-data:/var/lib/postgresql/data
+    networks:
+      - billing-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  trip-db:
+    image: postgres:16
+    container_name: busbooking-trip-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: busbooking_trip_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - trip-db-data:/var/lib/postgresql/data
+    networks:
+      - billing-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  booking-db:
+    image: postgres:16
+    container_name: busbooking-booking-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: busbooking_booking_db
+    ports:
+      - "5436:5432"
+    volumes:
+      - booking-db-data:/var/lib/postgresql/data
+    networks:
+      - busbooking-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -30,118 +84,91 @@ services:
 
   user-service:
     container_name: user-service
-
     build:
       context: .
       dockerfile: user-service/Dockerfile
-
     restart: unless-stopped
-
     depends_on:
-      postgres:
+      user-db:
         condition: service_healthy
-
     env_file:
       - ./user-service/.env.docker
-
     ports:
       - "3002:3002"
-
     networks:
-      - billing-network
+      - busbooking-network
 
   route-service:
     container_name: route-service
-
     build:
       context: .
       dockerfile: route-service/Dockerfile
-
     restart: unless-stopped
-
     depends_on:
-      postgres:
+      route-db:
         condition: service_healthy
-
     env_file:
       - ./route-service/.env.docker
-
     ports:
       - "3007:3007"
-
     networks:
-      - billing-network
+      - busbooking-network
 
   trip-service:
     container_name: trip-service
-
     build:
       context: .
       dockerfile: trip-service/Dockerfile
-
     restart: unless-stopped
-
     depends_on:
-      postgres:
+      trip-db:
         condition: service_healthy
-
     env_file:
       - ./trip-service/.env.docker
-
     ports:
       - "3008:3008"
-
     networks:
-      - billing-network
+      - busbooking-network
 
   booking-service:
     container_name: booking-service
-
     build:
       context: .
       dockerfile: booking-service/Dockerfile
-
     restart: unless-stopped
-
     depends_on:
-      postgres:
+      booking-db:
         condition: service_healthy
-
     env_file:
       - ./booking-service/.env.docker
-
     ports:
       - "3009:3009"
-
     networks:
-      - billing-network
+      - busbooking-network
 
   api-gateway:
     container_name: api-gateway
-
     build:
       context: .
       dockerfile: api-gateway/Dockerfile
-
     restart: unless-stopped
-
     depends_on:
       - user-service
       - route-service
       - trip-service
       - booking-service
-
     env_file:
       - ./api-gateway/.env.docker
-
     ports:
       - "3000:3000"
-
     networks:
-      - billing-network
+      - busbooking-network
 
 networks:
-  billing-network:
+  busbooking-network:
 
 volumes:
-  postgres-data:
+  user-db-data:
+  route-db-data:
+  trip-db-data:
+  booking-db-data:
