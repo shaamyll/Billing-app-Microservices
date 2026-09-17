@@ -22,3 +22,5 @@ export const storeProxy = createServiceProxy(env.STORE_SERVICE_URL);
 export const notificationProxy = createServiceProxy(
   env.NOTIFICATION_SERVICE_URL
 );
+
+export const routeProxy = createServiceProxy(env.ROUTE_SERVICE_URL);

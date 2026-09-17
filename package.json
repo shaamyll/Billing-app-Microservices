@@ -6,11 +6,12 @@
   "workspaces": [
     "api-gateway",
     "user-service",
-    "utils"
+    "utils",
+    "route-service"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev -w api-gateway\" \"npm run dev -w user-service\"",
-    "build": "npm run build -w utils && npm run build -w api-gateway && npm run build -w user-service",
+    "dev": "concurrently \"npm run dev -w api-gateway\" \"npm run dev -w user-service\" \"npm run dev -w route-service\"",
+    "build": "npm run build -w utils && npm run build -w api-gateway && npm run build -w user-service && npm run build -w route-service",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

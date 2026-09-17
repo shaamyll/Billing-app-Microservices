@@ -17,6 +17,7 @@ interface EnvConfig {
   INVOICE_SERVICE_URL: string;
   STORE_SERVICE_URL: string;
   NOTIFICATION_SERVICE_URL: string;
+  ROUTE_SERVICE_URL: string;
 }
 
 function validateEnv(): EnvConfig {
@@ -30,6 +31,7 @@ function validateEnv(): EnvConfig {
     'INVOICE_SERVICE_URL',
     'STORE_SERVICE_URL',
     'NOTIFICATION_SERVICE_URL',
+    'ROUTE_SERVICE_URL',
   ] as const;
 
   const missingVars = requiredEnvVars.filter(
@@ -56,6 +58,7 @@ function validateEnv(): EnvConfig {
     INVOICE_SERVICE_URL: process.env.INVOICE_SERVICE_URL!,
     STORE_SERVICE_URL: process.env.STORE_SERVICE_URL!,
     NOTIFICATION_SERVICE_URL: process.env.NOTIFICATION_SERVICE_URL!,
+    ROUTE_SERVICE_URL: process.env.ROUTE_SERVICE_URL!,
   };
 }
 

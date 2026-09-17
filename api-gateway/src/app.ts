@@ -5,12 +5,14 @@ import express, {
 } from 'express';
 import { AppResponse } from "@billing/utils";
 import authRoutes from './routes/auth.routes';
+import routeRoutes from './routes/route.routes';
 
 const createApp = () => {
   const app = express();
 
   // Register API routes
-  app.use("/api", authRoutes);
+  app.use("/auth", authRoutes);
+  app.use("/routes", routeRoutes);
 
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true }));

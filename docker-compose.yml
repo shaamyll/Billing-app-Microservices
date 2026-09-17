@@ -50,6 +50,28 @@ services:
     networks:
       - billing-network
 
+  route-service:
+    container_name: route-service
+
+    build:
+      context: .
+      dockerfile: route-service/Dockerfile
+
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    env_file:
+      - ./route-service/.env.docker
+
+    ports:
+      - "3007:3007"
+
+    networks:
+      - billing-network
+
   api-gateway:
     container_name: api-gateway
 
@@ -61,6 +83,7 @@ services:
 
     depends_on:
       - user-service
+      - route-service
 
     env_file:
       - ./api-gateway/.env.docker
