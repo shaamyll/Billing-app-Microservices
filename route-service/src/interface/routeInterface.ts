@@ -1,6 +1,6 @@
-import { Prisma } from "../generated/prisma/client";
+import { Route, Stop, Prisma } from "../generated/prisma/client";
 
-export type RouteModel = Prisma.RouteGetPayload<{}>;
+export type RouteModel = Route;
 export type RouteWithStops = Prisma.RouteGetPayload<{
   include: {
     stops: {
@@ -10,7 +10,7 @@ export type RouteWithStops = Prisma.RouteGetPayload<{
     };
   };
 }>;
-export type StopModel = Prisma.StopGetPayload<{}>;
+export type StopModel = Stop;
 export type CreateRouteInput = Prisma.RouteCreateInput;
 export type UpdateRouteInput = Prisma.RouteUpdateInput;
 export type RouteWhereInput = Prisma.RouteWhereInput;

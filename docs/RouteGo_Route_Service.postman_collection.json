@@ -1,0 +1,242 @@
+{
+  "info": {
+    "_postman_id": "routego-route-service-collection",
+    "name": "RouteGo - Route Service",
+    "description": "Postman collection for testing the Route Service in RouteGo bus reservation system (both via API Gateway and direct service).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "directUrl",
+      "value": "http://localhost:3007",
+      "type": "string"
+    },
+    {
+      "key": "routeId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "API Gateway (/api/routes)",
+      "item": [
+        {
+          "name": "1. Create Route with Ordered Stops",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has success and data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.expect(jsonData.data.stops).to.be.an('array').with.lengthOf(5);",
+                  "    ",
+                  "    // Save routeId for subsequent requests",
+                  "    pm.collectionVariables.set(\"routeId\", jsonData.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Express 101: New York to Boston\",\n  \"stops\": [\n    \"New York (Port Authority)\",\n    \"Stamford Station\",\n    \"New Haven (Union Station)\",\n    \"Hartford Terminal\",\n    \"Boston (South Station)\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/routes",
+              "host": ["{{baseUrl}}"],
+              "path": ["routes"]
+            },
+            "description": "Creates a new route with an ordered list of stop names. Sequence numbers are auto-assigned starting at 1 in a single transaction."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get All Routes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains routes list\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/routes",
+              "host": ["{{baseUrl}}"],
+              "path": ["routes"]
+            },
+            "description": "Lists all available routes with their stops."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Ordered Stops for a Route",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Stops are ordered by sequenceNumber\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "    for (let i = 0; i < jsonData.data.length; i++) {",
+                  "        pm.expect(jsonData.data[i].sequenceNumber).to.eql(i + 1);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/routes/{{routeId}}/stops",
+              "host": ["{{baseUrl}}"],
+              "path": ["routes", "{{routeId}}", "stops"]
+            },
+            "description": "Fetches ordered stops (1 to N) for the route specified by routeId."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Validation Test - Minimum 2 Stops Required",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Error message indicates validation failure\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.false;",
+                  "    pm.expect(jsonData.statusCode).to.eql(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Incomplete Route\",\n  \"stops\": [\n    \"Single Stop Only\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/routes",
+              "host": ["{{baseUrl}}"],
+              "path": ["routes"]
+            },
+            "description": "Tests validation rule requiring at least 2 stops for a route."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Direct Route Service (Port 3007)",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{directUrl}}/health",
+              "host": ["{{directUrl}}"],
+              "path": ["health"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Direct - Create Route",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Southern Route: LA to San Diego\",\n  \"stops\": [\n    \"Los Angeles Union Station\",\n    \"Anaheim Regional Transportation Center\",\n    \"Irvine Station\",\n    \"Oceanside Transit Center\",\n    \"San Diego Santa Fe Depot\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{directUrl}}/routes",
+              "host": ["{{directUrl}}"],
+              "path": ["routes"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Direct - List Routes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{directUrl}}/routes",
+              "host": ["{{directUrl}}"],
+              "path": ["routes"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

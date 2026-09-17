@@ -1,14 +1,15 @@
-import { Prisma, Role } from '../generated/prisma/client';
+import { Role, User } from '../generated/prisma/client';
 import { comparePassword, ConflictError, hashPassword, NotFoundError, ValidationError } from "@billing/utils";
 import { CustomError } from "@billing/utils";
 import { IUserRepository } from '../interface/userInterface';
 import { jwtService } from '../config/jwt';
+
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
   accessTokenExpiresIn: number;
   refreshTokenExpiresIn: number;
-  user: Omit<Prisma.UserGetPayload<{}>, 'password'>;
+  user: Omit<User, 'password'>;
 }
 export class UserService {
   private readonly userRepository: IUserRepository;
@@ -80,7 +81,7 @@ export class UserService {
   }
 
   //  Get current user from token
-  async getCurrentUser(accessToken: string): Promise<Omit<Prisma.UserGetPayload<{}>, 'password'> | null> {
+  async getCurrentUser(accessToken: string): Promise<Omit<User, 'password'> | null> {
     try {
       const payload = jwtService.verifyAccessToken(accessToken);
       const user = await this.userRepository.findById(payload.id);

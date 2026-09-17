@@ -1,6 +1,6 @@
-import { Prisma } from "../generated/prisma/client";
+import { User, Prisma } from "../generated/prisma/client";
 
-export type UserModel = Prisma.UserGetPayload<{}>;
+export type UserModel = User;
 export type CreateUserInput = Prisma.UserCreateInput;
 export type UpdateUserInput = Prisma.UserUpdateInput;
 export type UserWhereInput = Prisma.UserWhereInput;
