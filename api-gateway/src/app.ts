@@ -11,8 +11,8 @@ const createApp = () => {
   const app = express();
 
   // Register API routes
-  app.use("/auth", authRoutes);
-  app.use("/routes", routeRoutes);
+  app.use("/api/auth", authRoutes);
+  app.use("/api/routes", routeRoutes);
 
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true }));

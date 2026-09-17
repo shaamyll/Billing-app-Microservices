@@ -2,6 +2,7 @@ import createApp from './app';
 import { createLogger } from '@billing/utils';
 import { env } from './config/dotenv';
 
+// API Gateway entry point
 const PORT = env.PORT || 3000;
 
 const logger = createLogger({

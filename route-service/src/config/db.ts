@@ -3,7 +3,10 @@ import { PrismaClient } from "../generated/prisma/client";
 import { env } from "./dotenv";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-const adapter = new PrismaPg({ connectionString: env.ROUTE_DATABASE_URL, ssl: false });
+const adapter = new PrismaPg(
+  { connectionString: env.ROUTE_DATABASE_URL, ssl: false },
+  { schema: "route_schema" }
+);
 
 const logger = createLogger({
   isProduction: env.NODE_ENV === "production",
