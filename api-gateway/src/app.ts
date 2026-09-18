@@ -9,6 +9,7 @@ import routeRoutes from './routes/route.routes';
 import busRoutes from './routes/bus.routes';
 import tripRoutes from './routes/trip.routes';
 import bookingRoutes from './routes/booking.routes';
+import paymentRoutes from './routes/payment.routes';
 
 const createApp = () => {
   const app = express();
@@ -19,6 +20,7 @@ const createApp = () => {
   app.use("/api/buses", busRoutes);
   app.use("/api/trips", tripRoutes);
   app.use("/api/bookings", bookingRoutes);
+  app.use("/api/payments", paymentRoutes);
 
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true }));

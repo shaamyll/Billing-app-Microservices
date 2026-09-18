@@ -3,6 +3,15 @@ import tseslint from "typescript-eslint";
 import globals from "globals";
 
 export default [
+  {
+    ignores: [
+      "**/dist/**",
+      "**/node_modules/**",
+      "**/generated/**",
+      "scratch/**",
+      "**/.agents/**"
+    ]
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
 
@@ -20,5 +29,16 @@ export default [
         }
       ]
     }
+  },
+  {
+    files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
+    languageOptions: {
+      globals: {
+        ...globals.node
+      }
+    },
+    rules: {
+      "@typescript-eslint/no-require-imports": "off"
+    }
   }
-];
+];

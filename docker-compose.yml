@@ -80,6 +80,26 @@ services:
       timeout: 5s
       retries: 5
 
+  payment-db:
+    image: postgres:16
+    container_name: busbooking-payment-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: safeerapk11
+      POSTGRES_DB: busbooking_payment_db
+    ports:
+      - "5437:5432"
+    volumes:
+      - payment-db-data:/var/lib/postgresql/data
+    networks:
+      - busbooking-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   user-service:
     container_name: user-service
     build:
@@ -144,6 +164,22 @@ services:
     networks:
       - busbooking-network
 
+  payment-service:
+    container_name: payment-service
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      payment-db:
+        condition: service_healthy
+    env_file:
+      - ./payment-service/.env.docker
+    ports:
+      - "3010:3010"
+    networks:
+      - busbooking-network
+
   api-gateway:
     container_name: api-gateway
     build:
@@ -155,6 +191,7 @@ services:
       - route-service
       - trip-service
       - booking-service
+      - payment-service
     env_file:
       - ./api-gateway/.env.docker
     ports:
@@ -170,3 +207,4 @@ volumes:
   route-db-data:
   trip-db-data:
   booking-db-data:
+  payment-db-data:
