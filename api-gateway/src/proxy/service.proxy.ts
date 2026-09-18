@@ -14,4 +14,6 @@ export const routeProxy = createServiceProxy(env.ROUTE_SERVICE_URL);
 export const tripProxy = createServiceProxy(env.TRIP_SERVICE_URL);
 export const bookingProxy = createServiceProxy(env.BOOKING_SERVICE_URL);
 export const paymentProxy = createServiceProxy(env.PAYMENT_SERVICE_URL);
+export const bookingOrchestratorProxy = createServiceProxy(env.BOOKING_ORCHESTRATOR_URL);
+
 

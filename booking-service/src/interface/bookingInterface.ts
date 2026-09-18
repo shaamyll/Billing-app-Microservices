@@ -11,10 +11,13 @@ export interface CreateHoldDto {
   toStopSeq: number;
 }
 
+export type ReleaseReason = "PAYMENT_FAILED" | "USER_CANCELLED";
+
 export interface IBookingRepository {
   findActiveBookingsForSeat(tripId: string, seatId: string): Promise<BookingModel[]>;
   createBooking(data: Prisma.BookingCreateInput): Promise<BookingModel>;
   findById(id: string): Promise<BookingModel | null>;
+  updateStatus(id: string, status: BookingStatus): Promise<BookingModel>;
 }
 
 export interface ILockService {
@@ -36,4 +39,7 @@ export interface IBookingService {
     fromSeq: number,
     toSeq: number
   ): Promise<BookingModel>;
+  confirmBooking(id: string): Promise<BookingModel>;
+  releaseBooking(id: string, reason: ReleaseReason): Promise<BookingModel>;
 }
+

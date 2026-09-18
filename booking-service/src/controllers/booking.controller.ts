@@ -89,3 +89,53 @@ export const createHold = async (
     next(error);
   }
 };
+
+export const confirmBooking = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const bookingId = Array.isArray(req.params.id)
+      ? req.params.id[0]
+      : req.params.id;
+
+    const bookingService = getBookingService();
+    const booking = await bookingService.confirmBooking(bookingId);
+
+    return AppResponse.success(
+      res,
+      statusCode.SUCCESS,
+      booking,
+      "Booking confirmed successfully"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const releaseBooking = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const bookingId = Array.isArray(req.params.id)
+      ? req.params.id[0]
+      : req.params.id;
+    const { reason } = req.body;
+
+    const bookingService = getBookingService();
+    const booking = await bookingService.releaseBooking(bookingId, reason);
+
+    return AppResponse.success(
+      res,
+      statusCode.SUCCESS,
+      booking,
+      "Booking released successfully"
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+

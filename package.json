@@ -10,11 +10,13 @@
     "route-service",
     "trip-service",
     "booking-service",
-    "payment-service"
+    "payment-service",
+    "booking-orchestrator"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev -w api-gateway\" \"npm run dev -w user-service\" \"npm run dev -w route-service\" \"npm run dev -w trip-service\" \"npm run dev -w booking-service\" \"npm run dev -w payment-service\"",
-    "build": "npm run build -w utils && npm run build -w api-gateway && npm run build -w user-service && npm run build -w route-service && npm run build -w trip-service && npm run build -w booking-service && npm run build -w payment-service",
+    "dev": "concurrently \"npm run dev -w api-gateway\" \"npm run dev -w user-service\" \"npm run dev -w route-service\" \"npm run dev -w trip-service\" \"npm run dev -w booking-service\" \"npm run dev -w payment-service\" \"npm run dev -w booking-orchestrator\"",
+    "build": "npm run build -w utils && npm run build -w api-gateway && npm run build -w user-service && npm run build -w route-service && npm run build -w trip-service && npm run build -w booking-service && npm run build -w payment-service && npm run build -w booking-orchestrator",
+
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

@@ -16,6 +16,7 @@ interface EnvConfig {
   TRIP_SERVICE_URL: string;
   BOOKING_SERVICE_URL: string;
   PAYMENT_SERVICE_URL: string;
+  BOOKING_ORCHESTRATOR_URL: string;
 }
 
 function validateEnv(): EnvConfig {
@@ -47,7 +48,8 @@ function validateEnv(): EnvConfig {
     TRIP_SERVICE_URL: process.env.TRIP_SERVICE_URL || 'http://localhost:3008',
     BOOKING_SERVICE_URL: process.env.BOOKING_SERVICE_URL || 'http://localhost:3009',
     PAYMENT_SERVICE_URL: process.env.PAYMENT_SERVICE_URL || 'http://localhost:3010',
+    BOOKING_ORCHESTRATOR_URL: process.env.BOOKING_ORCHESTRATOR_URL || 'http://localhost:3011',
   };
 }
 
-export const env = validateEnv();
+export const env = validateEnv();

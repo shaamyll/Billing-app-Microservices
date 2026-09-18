@@ -79,9 +79,11 @@ Notification Service (consumes Kafka events, notifies passenger)
 - ✅ **API Gateway** — request proxying via a reusable `proxyFactory`
 - ✅ **User Service** — registration, login, JWT auth (access + refresh), Postgres via Prisma, repository pattern
 - ✅ **Shared `utils` package** — `hashPassword`, `jwt`, `http.errors`, `http.response`, `logger`, `PrismaRepositoryAdapter`
-- ⏳ **Route Service** — next up
-- ⏳ **Trip Service**
-- ⏳ **Booking Service** (segment-overlap logic + Redis lock)
+- ✅ **Route Service** — routes with ordered stops, full CRUD working via API Gateway
+- ✅ **Trip Service** — bus registration, seat layout, trip scheduling, full CRUD working via API Gateway
+- ✅ **Booking Service** — segment-overlap availability logic, Redis distributed lock, hold endpoint, all tested and working via API Gateway
+- ✅ **Payment Service** — simulated gateway (~90/10 success/failure), strict idempotency via `Idempotency-Key` header, refund with status guards, own dedicated database
+- ⏳ **Booking Orchestrator** — next up (saga: hold → charge → confirm/compensate), plus adding confirm/release endpoints to Booking Service and introducing Kafka for event publishing
 - ⏳ **Booking Orchestrator**
 - ⏳ **Payment Service**
 - ⏳ **Notification Service**
@@ -216,4 +218,4 @@ JWT_SECRET=your-secret-key
 6. Wire up Kafka events between Orchestrator and Notification Service
 7. Add the **Scheduler Service** to sweep expired seat holds
 8. Extend the API Gateway's `proxyFactory` to route to each new service
-9. Add integration tests, especially concurrency tests for simultaneous seat-hold attempts 
+9. Add integration tests, especially concurrency tests for simultaneous seat-hold attempts

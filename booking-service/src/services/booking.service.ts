@@ -4,9 +4,10 @@ import {
   IBookingRepository,
   IBookingService,
   ILockService,
+  ReleaseReason,
 } from "../interface/bookingInterface";
 import { hasSegmentConflict } from "../domain/segmentAvailability";
-import { ConflictError, ValidationError } from "@billing/utils";
+import { ConflictError, NotFoundError, ValidationError } from "@billing/utils";
 import { env } from "../config/dotenv";
 
 export class BookingService implements IBookingService {
@@ -117,4 +118,55 @@ export class BookingService implements IBookingService {
       await this.lockService.releaseLock(lockKey, lockValue);
     }
   }
+
+  async confirmBooking(id: string): Promise<BookingModel> {
+    if (!id) {
+      throw new ValidationError("Booking ID is required");
+    }
+
+    const booking = await this.bookingRepository.findById(id);
+    if (!booking) {
+      throw new NotFoundError("Booking not found");
+    }
+
+    if (booking.status !== BookingStatus.PENDING) {
+      throw new ConflictError(
+        `Cannot confirm booking with status ${booking.status}. Only PENDING bookings can be confirmed.`
+      );
+    }
+
+    if (booking.holdExpiresAt && booking.holdExpiresAt.getTime() < Date.now()) {
+      await this.bookingRepository.updateStatus(id, BookingStatus.EXPIRED);
+      throw new ConflictError(
+        "Booking hold has expired. The hold is no longer valid."
+      );
+    }
+
+    return await this.bookingRepository.updateStatus(id, BookingStatus.CONFIRMED);
+  }
+
+  async releaseBooking(id: string, reason: ReleaseReason): Promise<BookingModel> {
+    if (!id) {
+      throw new ValidationError("Booking ID is required");
+    }
+
+    if (reason !== "PAYMENT_FAILED" && reason !== "USER_CANCELLED") {
+      throw new ValidationError(
+        "Invalid release reason. Must be 'PAYMENT_FAILED' or 'USER_CANCELLED'"
+      );
+    }
+
+    const booking = await this.bookingRepository.findById(id);
+    if (!booking) {
+      throw new NotFoundError("Booking not found");
+    }
+
+    const targetStatus =
+      reason === "PAYMENT_FAILED"
+        ? BookingStatus.FAILED
+        : BookingStatus.CANCELLED;
+
+    return await this.bookingRepository.updateStatus(id, targetStatus);
+  }
 }
+

@@ -7,7 +7,7 @@ import {
   IBookingRepository,
   ILockService,
 } from "../src/interface/bookingInterface";
-import { ConflictError, ValidationError } from "@billing/utils";
+import { ConflictError, NotFoundError, ValidationError } from "@billing/utils";
 import { Prisma } from "../src/generated/prisma/client";
 
 describe("BookingService - Availability & Hold Creation", () => {
@@ -26,27 +26,48 @@ describe("BookingService - Availability & Hold Creation", () => {
 
   const createMockRepo = (
     activeBookings: BookingModel[] = [],
-    createFn?: (data: Prisma.BookingCreateInput) => Promise<BookingModel>
-  ): IBookingRepository => ({
-    findActiveBookingsForSeat: async () => activeBookings,
-    createBooking:
-      createFn ||
-      (async (data) => ({
-        id: "b2000000-0000-0000-0000-000000000002",
-        tripId: data.tripId,
-        seatId: data.seatId,
-        userId: data.userId,
-        fromStopSeq: data.fromStopSeq,
-        toStopSeq: data.toStopSeq,
-        status: data.status || BookingStatus.PENDING,
-        holdExpiresAt: data.holdExpiresAt
-          ? new Date(data.holdExpiresAt as string | Date)
-          : null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })),
-    findById: async () => null,
-  });
+    createFn?: (data: Prisma.BookingCreateInput) => Promise<BookingModel>,
+    existingBookings: BookingModel[] = []
+  ): IBookingRepository => {
+    const store = new Map<string, BookingModel>();
+    for (const b of activeBookings) store.set(b.id, { ...b });
+    for (const b of existingBookings) store.set(b.id, { ...b });
+
+    return {
+      findActiveBookingsForSeat: async () => Array.from(store.values()),
+      createBooking:
+        createFn ||
+        (async (data) => {
+          const booking: BookingModel = {
+            id: "b2000000-0000-0000-0000-000000000002",
+            tripId: data.tripId,
+            seatId: data.seatId,
+            userId: data.userId,
+            fromStopSeq: data.fromStopSeq,
+            toStopSeq: data.toStopSeq,
+            status: data.status || BookingStatus.PENDING,
+            holdExpiresAt: data.holdExpiresAt
+              ? new Date(data.holdExpiresAt as string | Date)
+              : null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          store.set(booking.id, booking);
+          return booking;
+        }),
+      findById: async (id: string) => {
+        const found = store.get(id);
+        return found ? { ...found } : null;
+      },
+      updateStatus: async (id: string, status: BookingStatus) => {
+        const found = store.get(id);
+        if (!found) throw new Error("Not found");
+        const updated = { ...found, status, updatedAt: new Date() };
+        store.set(id, updated);
+        return updated;
+      },
+    };
+  };
 
   const createMockLockService = (canAcquire = true): ILockService => {
     let locked = !canAcquire;
@@ -250,4 +271,248 @@ describe("BookingService - Availability & Hold Creation", () => {
       assert.strictEqual(lockReleased, true, "Lock should be released in finally block");
     });
   });
+
+  describe("confirmBooking", () => {
+    it("should confirm a valid PENDING booking and transition status to CONFIRMED", async () => {
+      const pendingBooking: BookingModel = {
+        id: "b-pending-1",
+        tripId: "t-1",
+        seatId: "s-1",
+        userId: "u-1",
+        fromStopSeq: 1,
+        toStopSeq: 3,
+        status: BookingStatus.PENDING,
+        holdExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // future expiry
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const repo = createMockRepo([], undefined, [pendingBooking]);
+      const service = new BookingService({
+        bookingRepository: repo,
+        lockService: createMockLockService(),
+      });
+
+      const confirmed = await service.confirmBooking("b-pending-1");
+
+      assert.strictEqual(confirmed.id, "b-pending-1");
+      assert.strictEqual(confirmed.status, BookingStatus.CONFIRMED);
+
+      // Verify persisted in repo
+      const stored = await repo.findById("b-pending-1");
+      assert.strictEqual(stored?.status, BookingStatus.CONFIRMED);
+    });
+
+    it("should reject confirming an already-CONFIRMED booking with ConflictError (409)", async () => {
+      const confirmedBooking: BookingModel = {
+        id: "b-confirmed-1",
+        tripId: "t-1",
+        seatId: "s-1",
+        userId: "u-1",
+        fromStopSeq: 1,
+        toStopSeq: 3,
+        status: BookingStatus.CONFIRMED,
+        holdExpiresAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const service = new BookingService({
+        bookingRepository: createMockRepo([], undefined, [confirmedBooking]),
+        lockService: createMockLockService(),
+      });
+
+      await assert.rejects(
+        async () => {
+          await service.confirmBooking("b-confirmed-1");
+        },
+        (err: unknown) => {
+          assert.ok(err instanceof ConflictError);
+          assert.match((err as ConflictError).message, /Cannot confirm booking with status CONFIRMED/i);
+          return true;
+        }
+      );
+    });
+
+    it("should reject confirming an EXPIRED hold with ConflictError (409) and update status to EXPIRED", async () => {
+      const expiredBooking: BookingModel = {
+        id: "b-expired-1",
+        tripId: "t-1",
+        seatId: "s-1",
+        userId: "u-1",
+        fromStopSeq: 1,
+        toStopSeq: 3,
+        status: BookingStatus.PENDING,
+        holdExpiresAt: new Date(Date.now() - 5000), // expired 5 seconds ago
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const repo = createMockRepo([], undefined, [expiredBooking]);
+      const service = new BookingService({
+        bookingRepository: repo,
+        lockService: createMockLockService(),
+      });
+
+      await assert.rejects(
+        async () => {
+          await service.confirmBooking("b-expired-1");
+        },
+        (err: unknown) => {
+          assert.ok(err instanceof ConflictError);
+          assert.match((err as ConflictError).message, /Booking hold has expired/i);
+          return true;
+        }
+      );
+
+      // Verify that status in repository was transitioned to EXPIRED
+      const updated = await repo.findById("b-expired-1");
+      assert.strictEqual(updated?.status, BookingStatus.EXPIRED);
+    });
+
+    it("should throw NotFoundError if booking does not exist", async () => {
+      const service = new BookingService({
+        bookingRepository: createMockRepo([]),
+        lockService: createMockLockService(),
+      });
+
+      await assert.rejects(
+        async () => {
+          await service.confirmBooking("non-existent-id");
+        },
+        NotFoundError
+      );
+    });
+
+    it("should throw ValidationError if booking ID is empty", async () => {
+      const service = new BookingService({
+        bookingRepository: createMockRepo([]),
+        lockService: createMockLockService(),
+      });
+
+      await assert.rejects(
+        async () => {
+          await service.confirmBooking("");
+        },
+        ValidationError
+      );
+    });
+  });
+
+  describe("releaseBooking", () => {
+    it("should release with reason PAYMENT_FAILED and transition status to FAILED", async () => {
+      const pendingBooking: BookingModel = {
+        id: "b-pending-2",
+        tripId: "t-1",
+        seatId: "s-1",
+        userId: "u-1",
+        fromStopSeq: 1,
+        toStopSeq: 3,
+        status: BookingStatus.PENDING,
+        holdExpiresAt: new Date(Date.now() + 60000),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const repo = createMockRepo([], undefined, [pendingBooking]);
+      const service = new BookingService({
+        bookingRepository: repo,
+        lockService: createMockLockService(),
+      });
+
+      const released = await service.releaseBooking("b-pending-2", "PAYMENT_FAILED");
+
+      assert.strictEqual(released.id, "b-pending-2");
+      assert.strictEqual(released.status, BookingStatus.FAILED);
+
+      const stored = await repo.findById("b-pending-2");
+      assert.strictEqual(stored?.status, BookingStatus.FAILED);
+    });
+
+    it("should release with reason USER_CANCELLED and transition status to CANCELLED", async () => {
+      const confirmedBooking: BookingModel = {
+        id: "b-confirmed-2",
+        tripId: "t-1",
+        seatId: "s-1",
+        userId: "u-1",
+        fromStopSeq: 1,
+        toStopSeq: 3,
+        status: BookingStatus.CONFIRMED,
+        holdExpiresAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const repo = createMockRepo([], undefined, [confirmedBooking]);
+      const service = new BookingService({
+        bookingRepository: repo,
+        lockService: createMockLockService(),
+      });
+
+      const cancelled = await service.releaseBooking("b-confirmed-2", "USER_CANCELLED");
+
+      assert.strictEqual(cancelled.id, "b-confirmed-2");
+      assert.strictEqual(cancelled.status, BookingStatus.CANCELLED);
+
+      const stored = await repo.findById("b-confirmed-2");
+      assert.strictEqual(stored?.status, BookingStatus.CANCELLED);
+    });
+
+    it("should throw ValidationError if release reason is invalid", async () => {
+      const pendingBooking: BookingModel = {
+        id: "b-pending-3",
+        tripId: "t-1",
+        seatId: "s-1",
+        userId: "u-1",
+        fromStopSeq: 1,
+        toStopSeq: 3,
+        status: BookingStatus.PENDING,
+        holdExpiresAt: new Date(Date.now() + 60000),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const service = new BookingService({
+        bookingRepository: createMockRepo([], undefined, [pendingBooking]),
+        lockService: createMockLockService(),
+      });
+
+      await assert.rejects(
+        async () => {
+          // @ts-expect-error testing invalid runtime reason
+          await service.releaseBooking("b-pending-3", "INVALID_REASON");
+        },
+        ValidationError
+      );
+    });
+
+    it("should throw NotFoundError if booking does not exist on release", async () => {
+      const service = new BookingService({
+        bookingRepository: createMockRepo([]),
+        lockService: createMockLockService(),
+      });
+
+      await assert.rejects(
+        async () => {
+          await service.releaseBooking("missing-booking-id", "PAYMENT_FAILED");
+        },
+        NotFoundError
+      );
+    });
+
+    it("should throw ValidationError if booking ID is empty on release", async () => {
+      const service = new BookingService({
+        bookingRepository: createMockRepo([]),
+        lockService: createMockLockService(),
+      });
+
+      await assert.rejects(
+        async () => {
+          await service.releaseBooking("", "PAYMENT_FAILED");
+        },
+        ValidationError
+      );
+    });
+  });
 });
+

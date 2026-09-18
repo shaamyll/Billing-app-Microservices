@@ -60,4 +60,11 @@ export class BookingRepository
       where: { id },
     });
   }
+
+  async updateStatus(id: string, status: BookingStatus): Promise<BookingModel> {
+    return prisma.booking.update({
+      where: { id },
+      data: { status },
+    });
+  }
 }
