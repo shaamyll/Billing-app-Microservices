@@ -16,7 +16,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev -w api-gateway\" \"npm run dev -w user-service\" \"npm run dev -w route-service\" \"npm run dev -w trip-service\" \"npm run dev -w booking-service\" \"npm run dev -w payment-service\" \"npm run dev -w booking-orchestrator\"",
     "build": "npm run build -w utils && npm run build -w api-gateway && npm run build -w user-service && npm run build -w route-service && npm run build -w trip-service && npm run build -w booking-service && npm run build -w payment-service && npm run build -w booking-orchestrator",
-
+    "proto:generate": "proto-loader-gen-types --longs=String --enums=String --defaults --oneofs --grpcLib=@grpc/grpc-js --outDir=proto/generated proto/booking.proto proto/payment.proto proto/user.proto",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -37,5 +37,9 @@
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.43.0"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "1.14.5",
+    "@grpc/proto-loader": "0.8.1"
   }
 }

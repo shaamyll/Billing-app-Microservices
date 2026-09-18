@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package payment;
+
+enum PaymentStatus {
+  SUCCEEDED = 0;
+  FAILED = 1;
+  REFUNDED = 2;
+}
+
+message ChargeRequest {
+  string bookingId = 1;
+  string userId = 2;
+  double amount = 3;
+  string currency = 4;
+  string idempotencyKey = 5;
+}
+
+message ChargeResponse {
+  bool success = 1;
+  string paymentId = 2;
+  string status = 3;
+  string failureReason = 4;
+}
+
+message RefundRequest {
+  string paymentId = 1;
+}
+
+message RefundResponse {
+  bool success = 1;
+  string status = 2;
+  string paymentId = 3;
+}
+
+service PaymentService {
+  rpc Charge(ChargeRequest) returns (ChargeResponse);
+  rpc Refund(RefundRequest) returns (RefundResponse);
+}

@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package booking;
+
+enum BookingStatus {
+  PENDING = 0;
+  CONFIRMED = 1;
+  FAILED = 2;
+  CANCELLED = 3;
+  EXPIRED = 4;
+}
+
+message HoldRequest {
+  string tripId = 1;
+  string seatId = 2;
+  string userId = 3;
+  int32 fromStopSeq = 4;
+  int32 toStopSeq = 5;
+}
+
+message ConfirmRequest {
+  string bookingId = 1;
+}
+
+message ReleaseRequest {
+  string bookingId = 1;
+  string reason = 2; // "PAYMENT_FAILED" or "USER_CANCELLED"
+}
+
+message CheckAvailabilityRequest {
+  string tripId = 1;
+  string seatId = 2;
+  int32 fromStopSeq = 3;
+  int32 toStopSeq = 4;
+}
+
+message CheckAvailabilityResponse {
+  bool available = 1;
+}
+
+message BookingResponse {
+  string id = 1;
+  string tripId = 2;
+  string seatId = 3;
+  string userId = 4;
+  int32 fromStopSeq = 5;
+  int32 toStopSeq = 6;
+  string status = 7;
+  string holdExpiresAt = 8;
+  string createdAt = 9;
+  string updatedAt = 10;
+}
+
+service BookingService {
+  rpc Hold(HoldRequest) returns (BookingResponse);
+  rpc Confirm(ConfirmRequest) returns (BookingResponse);
+  rpc Release(ReleaseRequest) returns (BookingResponse);
+  rpc CheckAvailability(CheckAvailabilityRequest) returns (CheckAvailabilityResponse);
+}
